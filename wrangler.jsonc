@@ -24,9 +24,12 @@
       "database_id": "0443eb26-e5e5-41ad-bf66-5afc6c9c97db"
     }
   ],
-  // Email Sending binding. Requires a domain onboarded via
-  // `wrangler email sending enable <domain>`. Absent locally, OTPs are logged.
-  "send_email": [{ "name": "EMAIL" }],
+  // Email Sending binding. Disabled until a domain is onboarded via
+  // `wrangler email sending enable <domain>`: declaring it against a domain
+  // this account does not own makes OTP sending throw at logon time.
+  // To enable: onboard the domain, set a real "EMAIL_FROM" below, then
+  // uncomment the line. Until then OTPs go to the logs (`wrangler tail`).
+  // "send_email": [{ "name": "EMAIL" }],
   "vars": {
     "EMAIL_FROM": "login@vibe95.example.com",
     "APP_NAME": "Vibe95"
