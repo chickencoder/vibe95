@@ -237,9 +237,6 @@ export function VibeChat({ winId }: { winId: string }) {
               ? `Connecting to #${room}...`
               : 'Disconnected. Reconnecting...'}
         </span>
-        <span className="status-cell" style={{ flex: '0 0 auto' }}>
-          Upload... posts one of your programs
-        </span>
       </div>
     </div>
   )

@@ -21,13 +21,13 @@ import {
   strayProse,
   type ProgramSize,
 } from '../protocol'
-import { verifyProgram } from '../verify'
+import { checkProgramFiles, verifyProgram } from '../verify'
 import { FolderIcon } from '../icons'
 import { iconForName } from '../iconLibrary'
 import { exeWindowSize, normalizeExeName, useFs, useWindows } from '../store'
 
 const MODEL = 'minimax/minimax-m3:free'
-const MAX_REPAIRS = 2
+const MAX_REPAIRS = 3
 const SESSION_KEY = 'vibe95-studio'
 
 interface LogEntry {
@@ -50,6 +50,10 @@ interface ActiveJob {
   convo: ChatMessage[]
   userText: string
   repairs: number
+  /** The user's original request for this generate; repairs keep this. */
+  originPrompt: string
+  /** Studio history when generate() was clicked. */
+  originConvo: ChatMessage[]
 }
 
 interface StudioSession {
@@ -418,15 +422,72 @@ export function VibeStudio({ winId, editFile }: { winId: string; editFile?: stri
     }
   }
 
+  function snapshotProtocol(files: Record<string, string>, note?: string | null) {
+    return renderProtocol(files, {
+      name: pendingNameRef.current,
+      size: sizeRef.current,
+      note: note || undefined,
+    })
+  }
+
+  /** Repair context: original request + current files, not a stack of failed EDITs. */
+  function repairConvo(job: ActiveJob, files: Record<string, string>, note?: string | null): ChatMessage[] {
+    const originPrompt = job.originPrompt ?? job.userText
+    const originConvo = job.originConvo ?? job.convo
+    const msgs: ChatMessage[] = [...originConvo, { role: 'user', content: originPrompt }]
+    if (Object.keys(files).length) {
+      msgs.push({ role: 'assistant', content: snapshotProtocol(files, note) })
+    }
+    return msgs
+  }
+
+  function repairPrompt(issues: string[]): string {
+    const listed = issues.join('\n- ')
+    const rewrite = issues.some(
+      (i) =>
+        /syntax error/i.test(i) ||
+        /SEARCH text was not found/i.test(i) ||
+        /characters \(limit /i.test(i) ||
+        /FILE section for .+ was empty/i.test(i) ||
+        /There is no index\.html/i.test(i) ||
+        /but no such file was provided/i.test(i)
+    )
+    if (rewrite) {
+      return (
+        `When the program was run, these problems were detected:\n- ${listed}\n\n` +
+        `Rewrite each broken file in full with a FILE section (complete new contents). ` +
+        `Do not use EDIT or SEARCH/REPLACE — those cannot fix syntax errors, oversized files, or a SEARCH that missed. ` +
+        `The assistant message above is the current files. End with === END ===`
+      )
+    }
+    return (
+      `When the program was run, these problems were detected:\n- ${listed}\n\n` +
+      `Fix them with EDIT sections against the current files in the assistant message above ` +
+      `(or a FILE section to rewrite a whole file). End with === END ===`
+    )
+  }
+
   /** Start a generation turn (fresh prompt or automatic repair). */
-  async function beginTurn(userText: string, convo: ChatMessage[], repairs: number) {
+  async function beginTurn(
+    userText: string,
+    convo: ChatMessage[],
+    repairs: number,
+    origin?: { prompt: string; convo: ChatMessage[] }
+  ) {
     const messages: ChatMessage[] = [
       { role: 'system', content: SYSTEM_PROMPT },
       ...convo,
       { role: 'user', content: userText },
     ]
     const jobId = await startGeneration(MODEL, messages)
-    const job: ActiveJob = { id: jobId, convo, userText, repairs }
+    const job: ActiveJob = {
+      id: jobId,
+      convo,
+      userText,
+      repairs,
+      originPrompt: origin?.prompt ?? userText,
+      originConvo: origin?.convo ?? convo,
+    }
     setActiveJob(job)
     await runJob(job)
   }
@@ -484,11 +545,9 @@ export function VibeStudio({ winId, editFile }: { winId: string; editFile?: stri
   }
 
   async function finishTurn(full: string, job: ActiveJob) {
-    const convo: ChatMessage[] = [
-      ...job.convo,
-      { role: 'user', content: job.userText },
-      { role: 'assistant', content: full },
-    ]
+    const originPrompt = job.originPrompt ?? job.userText
+    const originConvo = job.originConvo ?? job.convo
+    const origin = { prompt: originPrompt, convo: originConvo }
     const parsed = parseProtocol(full)
 
     if (!parsed.sections.length) {
@@ -499,8 +558,9 @@ export function VibeStudio({ winId, editFile }: { winId: string; editFile?: stri
         appendLog({ who: 'system', text: 'No program in the response. Asking for a rewrite...' })
         await beginTurn(
           'Your previous response contained no FILE or EDIT sections. Follow the response format exactly: === FILE: name === sections with complete file contents, ending with === END ===',
-          convo,
-          job.repairs + 1
+          repairConvo(job, filesRef.current),
+          job.repairs + 1,
+          origin
         )
         return
       }
@@ -528,17 +588,20 @@ export function VibeStudio({ winId, editFile }: { winId: string; editFile?: stri
       appendLog({ who: 'assistant', text: note || 'Program updated.' })
     }
 
-    // Lightweight QA: apply/reference problems, structure + script syntax,
-    // and a real render in a hidden sandbox. Problems go back to the model.
+    // Lightweight QA: apply/reference problems, per-file syntax with line
+    // numbers, then a real render in a hidden sandbox.
     setStatus('Testing program')
     setProg((p) => p && { ...p, phase: 'testing' })
+    const fileIssues = checkProgramFiles(applied.files)
+    const syntaxBroken = fileIssues.some((i) => /syntax error/i.test(i))
     const issues = [
       ...applied.issues,
       ...missingReferences(applied.files).map(
         (path) => `index.html references ${path}, but no such file was provided. Add a FILE section for it or remove the reference.`
       ),
       ...(applied.files['index.html'] ? [] : ['There is no index.html. Every program needs one.']),
-      ...(await verifyProgram(html)),
+      ...fileIssues,
+      ...(await verifyProgram(html, { skipRuntime: syntaxBroken })),
     ]
     if (issues.length && job.repairs < MAX_REPAIRS) {
       appendLog({
@@ -546,11 +609,10 @@ export function VibeStudio({ winId, editFile }: { winId: string; editFile?: stri
         text: `Testing found ${issues.length} problem(s). Fixing automatically...`,
       })
       await beginTurn(
-        `When the program was run, these problems were detected:\n- ${issues.join(
-          '\n- '
-        )}\nFix them with EDIT sections (or a FILE section to rewrite a whole file), ending with === END ===`,
-        convo,
-        job.repairs + 1
+        repairPrompt(issues),
+        repairConvo(job, applied.files, parsed.note),
+        job.repairs + 1,
+        origin
       )
       return
     }
@@ -582,7 +644,12 @@ export function VibeStudio({ winId, editFile }: { winId: string; editFile?: stri
     saveFile(finalName, html, icon, applied.files)
     setTitle(winId, `Vibe Studio - ${finalName}`)
 
-    setHistory(convo)
+    // Persist a clean snapshot for the next edit, not the raw EDIT/repair chain.
+    setHistory([
+      ...originConvo,
+      { role: 'user', content: originPrompt },
+      { role: 'assistant', content: snapshotProtocol(applied.files, parsed.note) },
+    ])
     setActiveJob(null)
     setBusy(false)
     setProg(null)

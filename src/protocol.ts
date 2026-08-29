@@ -18,6 +18,8 @@ export const END_MARKER = '=== END ==='
 
 export const MAX_FILES = 24
 export const MAX_TOTAL_BYTES = 400_000
+/** Per-file JS budget. MiniMax produces unfixable syntax errors past this. */
+export const MAX_JS_FILE_CHARS = 8_000
 export const FILE_PATH_RE = /^[A-Za-z0-9_\-]{1,32}\.(html|css|js|json|txt|svg)$/
 
 export const SECTION_RE = /^[ \t]*={2,5}\s*(FILE|EDIT|DELETE)\s*:\s*([^\s=]+)\s*={2,5}[ \t]*$/
@@ -191,28 +193,47 @@ export interface ApplyResult {
 // belongs to the marker line rather than the replacement text.
 const SEARCH_REPLACE_RE = /<{4,9}[ \t]*SEARCH[ \t]*\n([\s\S]*?)\n={4,9}[ \t]*\n([\s\S]*?)>{4,9}[ \t]*REPLACE/g
 
-/** Exact match first, then a line-wise match ignoring trailing whitespace. */
+function spanFromLines(
+  contentLines: string[],
+  startLine: number,
+  n: number
+): { start: number; end: number } {
+  const start = contentLines.slice(0, startLine).join('\n').length + (startLine > 0 ? 1 : 0)
+  const matched = contentLines.slice(startLine, startLine + n).join('\n')
+  return { start, end: start + matched.length }
+}
+
+/**
+ * Exact match first, then line-wise: trailing whitespace, then leading
+ * indent. MiniMax often pastes SEARCH with an extra indent on the first
+ * line (or every line) of a copied block.
+ */
 function findSpan(content: string, search: string): { start: number; end: number } | null {
   const exact = content.indexOf(search)
   if (exact !== -1) return { start: exact, end: exact + search.length }
 
-  const norm = (s: string) => s.replace(/\r/g, '').replace(/[ \t]+$/gm, '')
   const contentLines = content.split('\n')
-  const searchLines = norm(search).split('\n')
-  for (let i = 0; i + searchLines.length <= contentLines.length; i++) {
-    let ok = true
-    for (let j = 0; j < searchLines.length; j++) {
-      if (norm(contentLines[i + j]) !== searchLines[j]) {
-        ok = false
-        break
+  const searchLines = search.replace(/\r/g, '').split('\n')
+
+  const match = (fold: (s: string) => string) => {
+    const want = searchLines.map(fold)
+    for (let i = 0; i + want.length <= contentLines.length; i++) {
+      let ok = true
+      for (let j = 0; j < want.length; j++) {
+        if (fold(contentLines[i + j]) !== want[j]) {
+          ok = false
+          break
+        }
       }
+      if (ok) return spanFromLines(contentLines, i, want.length)
     }
-    if (!ok) continue
-    const start = contentLines.slice(0, i).join('\n').length + (i > 0 ? 1 : 0)
-    const matched = contentLines.slice(i, i + searchLines.length).join('\n')
-    return { start, end: start + matched.length }
+    return null
   }
-  return null
+
+  return (
+    match((s) => s.replace(/[ \t]+$/g, '')) ||
+    match((s) => s.replace(/^[ \t]+/, '').replace(/[ \t]+$/g, ''))
+  )
 }
 
 /** Apply a parsed response to the current files, collecting model-fixable issues. */
@@ -255,7 +276,7 @@ export function applyResponse(
       const span = findSpan(updated, m[1])
       if (!span) {
         issues.push(
-          `In ${sec.path}, this SEARCH text was not found (copy it exactly from the file):\n${m[1].slice(0, 300)}`
+          `In ${sec.path}, this SEARCH text was not found. Do not retry SEARCH; rewrite ${sec.path} with a complete FILE section.\n${m[1].slice(0, 300)}`
         )
         continue
       }
