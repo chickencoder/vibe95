@@ -443,27 +443,28 @@ export function VibeStudio({ winId, editFile }: { winId: string; editFile?: stri
 
   function repairPrompt(issues: string[]): string {
     const listed = issues.join('\n- ')
-    const rewrite = issues.some(
+    const mustCreate = issues.some(
       (i) =>
-        /syntax error/i.test(i) ||
-        /SEARCH text was not found/i.test(i) ||
         /characters \(limit /i.test(i) ||
         /FILE section for .+ was empty/i.test(i) ||
         /There is no index\.html/i.test(i) ||
         /but no such file was provided/i.test(i)
     )
-    if (rewrite) {
+    if (mustCreate) {
       return (
         `When the program was run, these problems were detected:\n- ${listed}\n\n` +
-        `Rewrite each broken file in full with a FILE section (complete new contents). ` +
-        `Do not use EDIT or SEARCH/REPLACE — those cannot fix syntax errors, oversized files, or a SEARCH that missed. ` +
-        `The assistant message above is the current files. End with === END ===`
+        `The assistant message above is the current files. Fix only what is broken: ` +
+        `add or split files with FILE sections, leave working files alone (do not resend them). ` +
+        `Small patches in existing files should be EDIT/SEARCH-REPLACE copied from the current file. ` +
+        `End with === END ===`
       )
     }
     return (
       `When the program was run, these problems were detected:\n- ${listed}\n\n` +
-      `Fix them with EDIT sections against the current files in the assistant message above ` +
-      `(or a FILE section to rewrite a whole file). End with === END ===`
+      `Make a surgical fix. Use EDIT sections with SEARCH/REPLACE against the current files in the assistant message — ` +
+      `copy the SEARCH text from those files (or from the snippet above), including surrounding lines so it is unique. ` +
+      `Do not resend unchanged files. Do not rewrite a whole file unless a SEARCH cannot express the change ` +
+      `(then FILE that one file only). End with === END ===`
     )
   }
 

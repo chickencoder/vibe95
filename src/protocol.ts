@@ -276,7 +276,7 @@ export function applyResponse(
       const span = findSpan(updated, m[1])
       if (!span) {
         issues.push(
-          `In ${sec.path}, this SEARCH text was not found. Do not retry SEARCH; rewrite ${sec.path} with a complete FILE section.\n${m[1].slice(0, 300)}`
+          `In ${sec.path}, this SEARCH text was not found. Copy SEARCH from the current file in the previous assistant message (exact characters). If that still cannot match, rewrite only ${sec.path} with a FILE section.\n${m[1].slice(0, 300)}`
         )
         continue
       }
