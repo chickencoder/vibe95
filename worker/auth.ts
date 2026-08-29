@@ -59,8 +59,15 @@ function createAuth(env: Env) {
   })
 }
 
-let cached: ReturnType<typeof createAuth> | null = null
-
+/**
+ * Built fresh per request, deliberately. A module-level cache outlives the
+ * request that created it, and the auth instance owns D1-backed I/O: if the
+ * request that first drives that I/O goes away while it is still pending, the
+ * cached instance keeps a promise that can never settle, and every later
+ * request on that isolate awaits it forever. That surfaced as a fraction of
+ * requests hanging (2 of 10 in parallel) while the rest were fine, since only
+ * some isolates were poisoned. Construction is cheap beside the D1 round-trip.
+ */
 export function getAuth(env: Env) {
-  return (cached ??= createAuth(env))
+  return createAuth(env)
 }
