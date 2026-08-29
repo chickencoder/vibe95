@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "vibe95",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "not_found_handling": "single-page-application"
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "GENERATOR", "class_name": "GenerationJob" },
+      { "name": "CHAT", "class_name": "VibeRoom" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["GenerationJob"] },
+    { "tag": "v2", "new_sqlite_classes": ["VibeRoom"] }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vibe95",
+      "database_id": "0443eb26-e5e5-41ad-bf66-5afc6c9c97db"
+    }
+  ],
+  // Email Sending binding. Requires a domain onboarded via
+  // `wrangler email sending enable <domain>`. Absent locally, OTPs are logged.
+  "send_email": [{ "name": "EMAIL" }],
+  "vars": {
+    "EMAIL_FROM": "login@vibe95.example.com",
+    "APP_NAME": "Vibe95"
+  }
+}
