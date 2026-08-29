@@ -8,9 +8,9 @@
       name="description"
       content="Vibe code apps in a Windows95 desktop, free. Describe an app, watch the AI write it, and it launches in its own window. Save it as a .EXE, stored in the cloud."
     />
-    <!-- SITE_URL: absolute URLs below must point at the production origin.
-         Update every https://vibe95.example.com occurrence when the domain is final. -->
-    <link rel="canonical" href="https://vibe95.example.com/" />
+    <!-- SITE_URL: absolute URLs must be the final origin (www). X/Twitterbot
+         will not follow a placeholder host, and vibe95.net 301s to www. -->
+    <link rel="canonical" href="https://www.vibe95.net/" />
 
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -26,8 +26,9 @@
       property="og:description"
       content="Vibe code apps in a Windows95 desktop, free. Describe an app, watch the AI write it, and it launches in its own window. Save it as a .EXE, stored in the cloud."
     />
-    <meta property="og:url" content="https://vibe95.example.com/" />
-    <meta property="og:image" content="https://vibe95.example.com/og.png" />
+    <meta property="og:url" content="https://www.vibe95.net/" />
+    <meta property="og:image" content="https://www.vibe95.net/og.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="A Windows 95 desktop with Vibe Studio open, generating a program" />
@@ -39,14 +40,15 @@
       name="twitter:description"
       content="Vibe code apps in a Windows95 desktop, free. Describe an app and watch the AI write it."
     />
-    <meta name="twitter:image" content="https://vibe95.example.com/og.png" />
+    <meta name="twitter:image" content="https://www.vibe95.net/og.png" />
+    <meta name="twitter:image:alt" content="A Windows 95 desktop with Vibe Studio open, generating a program" />
 
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "Vibe95",
-        "url": "https://vibe95.example.com/",
+        "url": "https://www.vibe95.net/",
         "description": "Vibe code apps in a Windows95 desktop, free. Describe an app and watch the AI write it.",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Web",
