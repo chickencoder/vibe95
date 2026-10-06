@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { authClient } from './authClient'
 import { Logon } from './components/Logon'
-import { exeWindowSize, normalizeExeName, useFs, useWindows, DIALOG_KINDS } from './store'
+import { Landing } from './components/Landing'
+import {
+  exeWindowSize,
+  normalizeExeName,
+  pendingPrompt,
+  useFs,
+  useWindows,
+  DIALOG_KINDS,
+} from './store'
 import { extractSize } from './protocol'
 import { Window } from './components/Window'
 import { Taskbar } from './components/Taskbar'
@@ -57,6 +65,20 @@ interface Pos {
   y: number
 }
 
+type LogonMode = 'signin' | 'signup'
+
+/** Signed out, the hash picks the screen: #logon, #new-user, or the landing page. */
+function logonFromHash(): LogonMode | null {
+  if (location.hash === '#logon') return 'signin'
+  if (location.hash === '#new-user') return 'signup'
+  return null
+}
+
+/** Drop #logon / #new-user without adding a history entry. */
+function clearHash() {
+  history.replaceState(null, '', location.pathname + location.search)
+}
+
 function loadPositions(): Record<string, Pos> {
   try {
     return JSON.parse(localStorage.getItem(POS_KEY) ?? '{}') as Record<string, Pos>
@@ -78,6 +100,7 @@ export default function App() {
   const createFolder = useFs((s) => s.createFolder)
   const loadFromServer = useFs((s) => s.loadFromServer)
   const clearLocal = useFs((s) => s.clearLocal)
+  const [logon, setLogon] = useState<LogonMode | null>(logonFromHash)
   const [startOpen, setStartOpen] = useState(false)
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
   const [ctxMenu, setCtxMenu] = useState<CtxMenu | null>(null)
@@ -91,6 +114,12 @@ export default function App() {
   const [dropFolder, setDropFolder] = useState<string | null>(null)
   const draggedRef = useRef(false)
   const activeId = topId()
+
+  useEffect(() => {
+    const onHash = () => setLogon(logonFromHash())
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
 
   useEffect(() => {
     const dismiss = () => {
@@ -133,6 +162,10 @@ export default function App() {
     if (localStorage.getItem('vibe95-welcome-pending')) {
       localStorage.removeItem('vibe95-welcome-pending')
       open('welcome', { title: 'Welcome to Vibe95' })
+    }
+    // An idea typed into the landing page demo: the studio picks it up.
+    if (pendingPrompt() && !useWindows.getState().windows.some((w) => w.kind === 'studio')) {
+      open('studio')
     }
   }, [session?.user?.id])
 
@@ -400,7 +433,23 @@ export default function App() {
   }
 
   if (!session?.user) {
-    return <Logon onLoggedOn={() => refetch()} />
+    if (!logon) return <Landing />
+    return (
+      <Logon
+        key={logon}
+        initialMode={logon}
+        onCancel={() => {
+          clearHash()
+          setLogon(null)
+        }}
+        onLoggedOn={() => {
+          // Keep `logon` set: clearing it now would flash the landing page
+          // until the session refetch lands.
+          clearHash()
+          refetch()
+        }}
+      />
+    )
   }
 
   const exeList = Object.values(files)
@@ -618,6 +667,9 @@ export default function App() {
             await authClient.signOut()
             clearLocal()
             localStorage.removeItem('vibe95-studio')
+            // Log Off goes back to the logon dialog, as in Windows 95.
+            history.replaceState(null, '', '#logon')
+            setLogon('signin')
             refetch()
           }}
           onShutdown={() => setShutdown(true)}

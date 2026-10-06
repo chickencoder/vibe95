@@ -1,9 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { authClient } from '../authClient'
-import { FlagIcon } from '../icons'
+import { CloseGlyph, FlagIcon } from '../icons'
 
-export function Logon({ onLoggedOn }: { onLoggedOn: () => void }) {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+export function Logon({
+  initialMode = 'signin',
+  onLoggedOn,
+  onCancel,
+}: {
+  initialMode?: 'signin' | 'signup'
+  onLoggedOn: () => void
+  /** Back to the landing page. */
+  onCancel: () => void
+}) {
+  const [mode, setMode] = useState(initialMode)
   const [identifier, setIdentifier] = useState('') // username or e-mail
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -64,18 +73,29 @@ export function Logon({ onLoggedOn }: { onLoggedOn: () => void }) {
 
   const submit = mode === 'signin' ? signIn : signUp
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !busy && onCancel()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [busy, onCancel])
+
   return (
     <div
       className="desktop"
       style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
-      <div className="window" style={{ position: 'relative', width: 400 }}>
+      <div className="window" style={{ position: 'relative', width: 400, maxWidth: 'calc(100vw - 32px)' }}>
         <div className="titlebar">
           <span className="titlebar-icon">
             <FlagIcon size={14} />
           </span>
           <span className="titlebar-text">
             {mode === 'signin' ? 'Welcome to Vibe95' : 'New User Account'}
+          </span>
+          <span className="titlebar-buttons">
+            <button className="tb-btn" aria-label="Close" disabled={busy} onClick={onCancel}>
+              <CloseGlyph />
+            </button>
           </span>
         </div>
         <div className="window-body">
@@ -147,8 +167,12 @@ export function Logon({ onLoggedOn }: { onLoggedOn: () => void }) {
               >
                 {mode === 'signin' ? 'New User...' : 'Back'}
               </button>
+              <span style={{ flex: 1 }} />
               <button className="btn" disabled={busy} onClick={submit}>
                 {busy ? 'Working...' : mode === 'signin' ? 'OK' : 'Create'}
+              </button>
+              <button className="btn" disabled={busy} onClick={onCancel}>
+                Cancel
               </button>
             </div>
           </div>

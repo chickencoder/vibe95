@@ -81,6 +81,20 @@ export function FolderIcon({ size = 32 }: { size?: number }) {
   )
 }
 
+/** A navy question mark, the Help glyph. */
+export function HelpIcon({ size = 32 }: { size?: number }) {
+  return (
+    <svg className="icon-img" width={size} height={size} viewBox="0 0 32 32" {...P}>
+      <rect x="10" y="4" width="12" height="4" fill="#000080" />
+      <rect x="8" y="8" width="6" height="4" fill="#000080" />
+      <rect x="18" y="8" width="6" height="4" fill="#000080" />
+      <rect x="16" y="12" width="6" height="4" fill="#000080" />
+      <rect x="14" y="16" width="4" height="6" fill="#000080" />
+      <rect x="14" y="25" width="4" height="4" fill="#000080" />
+    </svg>
+  )
+}
+
 /** The Windows 95 logon key graphic — a gold key on a teal keyring card. */
 export function LogonKeysIcon({ size = 44 }: { size?: number }) {
   return (
