@@ -12,6 +12,7 @@ An online vibe-coding platform trapped inside Windows 95. Log on with your e-mai
 - **Cloudflare Email Service** — `send_email` binding delivers logon codes
 - **OpenRouter** — model-agnostic streaming generation; the model picker is populated live
 - **Vite + React** frontend with the `@cloudflare/vite-plugin` (one dev server, one deploy)
+- **Landing page** — signed-out visitors get `src/components/Landing.tsx`: a scripted Vibe Studio demo that "writes" and runs PONG.EXE, then features, pricing ($0.00) and help. `#logon` and `#new-user` open the logon dialog (Back returns to the page); an idea typed into the demo is carried into Vibe Studio after sign-up.
 - Hand-rolled pixel-faithful Win95 chrome; programs run in sandboxed `iframe srcdoc` with an in-memory localStorage shim (opaque-origin iframes can't touch real localStorage)
 
 ## Local dev

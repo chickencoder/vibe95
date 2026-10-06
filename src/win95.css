@@ -1230,3 +1230,474 @@ textarea.field {
   left: 100%;
   top: -3px;
 }
+
+/* ===== Landing page (signed out) ===================================== */
+
+/* Its own scroll container: html/body never scroll (the desktop is fixed). */
+.landing {
+  position: fixed;
+  inset: 0 0 28px 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--w95-desktop);
+  user-select: text;
+  scroll-behavior: smooth;
+}
+
+.landing ::selection {
+  background: var(--w95-select);
+  color: #fff;
+}
+
+.landing-page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 16px;
+  color: #fff;
+}
+
+.landing-page .window {
+  color: #000;
+}
+
+.landing-btn-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #000;
+  text-decoration: none;
+}
+
+.landing-btn-link.disabled {
+  pointer-events: none;
+  color: var(--w95-shadow);
+  text-shadow: 1px 1px 0 var(--w95-light);
+}
+
+.landing-btn-big {
+  height: 36px;
+  padding: 0 22px;
+  font-weight: 700;
+}
+
+.landing-btn-big:active {
+  padding: 2px 20px 0 24px;
+}
+
+/* Bold is the call to action; the second button is a normal one. */
+.landing-btn-plain {
+  font-weight: 400;
+}
+
+.landing-note {
+  margin-top: 14px;
+  line-height: 1.4;
+}
+
+/* ----- Hero ---------------------------------------------------------- */
+
+.landing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 48px;
+  align-items: center;
+  padding: 64px 0 16px;
+}
+
+.landing-title {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  font-weight: 400;
+}
+
+.landing-logo {
+  font-size: 88px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 2px;
+  color: #fff;
+  text-shadow: 5px 5px 0 var(--w95-title-active), 10px 10px 0 rgba(0, 0, 0, 0.35);
+}
+
+.landing-tagline {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.landing-badge {
+  display: inline-block;
+  margin-top: 18px;
+  padding: 4px 10px;
+  background: #ffff00;
+  color: #000;
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
+  font-weight: 700;
+  transform: rotate(-2deg);
+}
+
+.landing-lede {
+  margin-top: 20px;
+  font-size: 22px;
+  line-height: 1.35;
+  max-width: 30em;
+}
+
+.landing-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+/* ----- Hero demo (a scripted Vibe Studio) ---------------------------- */
+
+.landing-demo {
+  position: relative;
+  padding: 0 24px 96px 0;
+  user-select: none;
+}
+
+.landing-studio {
+  position: relative;
+  width: 100%;
+  height: 384px;
+  min-width: 0;
+}
+
+.landing-studio-chat {
+  width: 210px;
+}
+
+.landing-studio .chat-log {
+  overflow: hidden;
+}
+
+.landing-studio .chat-input-row .field {
+  flex: 1;
+  min-width: 0;
+}
+
+.landing-studio .code-view {
+  overflow: hidden;
+}
+
+.landing-pressed {
+  box-shadow: var(--bevel-pressed);
+}
+
+.landing-pong {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 326px;
+  max-width: calc(100% - 24px);
+  height: 226px;
+  min-height: 0;
+  z-index: 1;
+}
+
+/* ----- Sections ------------------------------------------------------ */
+
+.landing-section {
+  padding: 40px 0;
+  scroll-margin-top: 8px;
+}
+
+.landing-h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-shadow: 3px 3px 0 var(--w95-title-active);
+}
+
+.landing-win {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.landing-win .titlebar-text {
+  font-size: inherit;
+}
+
+.landing-win p {
+  line-height: 1.45;
+}
+
+.landing-steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  padding: 16px;
+}
+
+.landing-step {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.landing-step .icon-img,
+.landing-feature .icon-img {
+  flex: none;
+}
+
+.landing-step p {
+  margin-top: 4px;
+}
+
+.landing-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.landing-feature {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+}
+
+/* ----- Pricing ------------------------------------------------------- */
+
+.landing-pricing {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 40px;
+  align-items: center;
+}
+
+.landing-order-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+}
+
+.landing-order-row {
+  display: flex;
+  gap: 8px;
+}
+
+.landing-order-dots {
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 1px dotted var(--w95-shadow);
+  margin-bottom: 3px;
+}
+
+.landing-order-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 2px solid var(--w95-shadow);
+}
+
+.landing-order-sum {
+  font-size: 33px;
+  font-weight: 700;
+  color: var(--w95-title-active);
+}
+
+.landing-error {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  max-width: calc(100% - 24px);
+  min-height: 0;
+  z-index: 2;
+}
+
+.landing-error-actions {
+  justify-content: center;
+}
+
+.landing-stop {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ff0000;
+  border: 1px solid #000;
+  color: #fff;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.landing-pricing-why h3 {
+  font-size: 22px;
+  margin-bottom: 12px;
+  text-shadow: 3px 3px 0 var(--w95-title-active);
+}
+
+.landing-pricing-why p {
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+
+/* ----- Help ---------------------------------------------------------- */
+
+.landing-faq {
+  margin: 4px;
+  padding: 6px 12px;
+}
+
+.landing-faq details + details {
+  border-top: 1px dotted var(--w95-shadow);
+}
+
+.landing-faq summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+}
+
+.landing-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+/* The Explorer tree's +/- expander box. */
+.landing-faq summary::before {
+  content: '+';
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--w95-shadow);
+  background: #fff;
+  font-size: 9px;
+  line-height: 7px;
+  text-align: center;
+  font-weight: 400;
+}
+
+.landing-faq details[open] summary::before {
+  content: '-';
+}
+
+.landing-faq summary:focus-visible {
+  outline: 1px dotted #000;
+}
+
+.landing-faq p {
+  padding: 0 0 10px 17px;
+}
+
+.landing-faq a {
+  color: #0000ee;
+  text-decoration: underline;
+}
+
+/* ----- End card, footer, taskbar ------------------------------------- */
+
+.landing-end {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 72px 0 48px;
+  text-align: center;
+}
+
+.landing-end-text {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.landing-footer {
+  padding: 16px 0 28px;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.landing-taskbar-hint {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.landing-start-menu {
+  width: 190px;
+}
+
+.landing-start-menu .menu-item {
+  color: inherit;
+  text-decoration: none;
+}
+
+.landing-start-menu .menu-item:focus-visible {
+  background: var(--w95-select);
+  color: #fff;
+  outline: none;
+}
+
+@media (max-width: 960px) {
+  .landing-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+    padding-top: 40px;
+  }
+  .landing-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .landing-features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .landing-pricing {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .landing-logo {
+    font-size: 66px;
+  }
+  .landing-lede {
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  .landing-demo {
+    padding-right: 0;
+  }
+  .landing-studio {
+    height: 520px;
+  }
+  .landing-studio-main {
+    flex-direction: column;
+  }
+  .landing-studio-chat {
+    width: auto;
+    height: 250px;
+  }
+  .landing-pong {
+    height: 200px;
+  }
+  .landing-steps,
+  .landing-features {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing {
+    scroll-behavior: auto;
+  }
+}

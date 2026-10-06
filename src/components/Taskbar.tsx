@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useWindows } from '../store'
 import { FlagIcon, iconFor } from '../icons'
 
-function Clock() {
+export function Clock() {
   const [now, setNow] = useState(new Date())
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 15000)

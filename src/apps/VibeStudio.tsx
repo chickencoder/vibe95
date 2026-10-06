@@ -181,7 +181,7 @@ function FileGlyph({ path }: { path: string }) {
   )
 }
 
-function StepRow({
+export function StepRow({
   state,
   children,
   detail,
@@ -257,7 +257,10 @@ export function VibeStudio({ winId, editFile }: { winId: string; editFile?: stri
   const { open, setTitle, updatePayload } = useWindows()
   const saveFile = useFs((s) => s.saveFile)
   const saved = useRef(editFile ? editSession(editFile) : loadSession()).current
-  const [prompt, setPrompt] = useState('')
+  // An idea typed into the landing page demo before logging on.
+  const [prompt, setPrompt] = useState(() =>
+    editFile ? '' : (localStorage.getItem('vibe95-pending-prompt') ?? '')
+  )
   const [log, setLog] = useState<LogEntry[]>(saved?.log ?? [])
   const [history, setHistory] = useState<ChatMessage[]>(saved?.history ?? [])
   const [code, setCode] = useState(saved?.code ?? '')
@@ -321,6 +324,11 @@ export function VibeStudio({ winId, editFile }: { winId: string; editFile?: stri
   }, [history, log, code, programFiles, programName, programIcon, programSize, activeJob])
 
   useEffect(() => () => abortRef.current?.abort(), [])
+
+  // The landing page idea is consumed once it is in the prompt box.
+  useEffect(() => {
+    if (!editFile) localStorage.removeItem('vibe95-pending-prompt')
+  }, [])
 
   // Re-attach to a generation that was running when the page was refreshed.
   // Delayed and cancelable so StrictMode's mount/unmount/mount cycle doesn't
