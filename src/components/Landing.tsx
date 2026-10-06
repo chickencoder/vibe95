@@ -16,6 +16,7 @@ import {
   StudioIcon,
 } from '../icons'
 import { StepRow } from '../apps/VibeStudio'
+import { setPendingPrompt } from '../store'
 import { Clock } from './Taskbar'
 
 /* The signed-out front page. Logon and sign-up live behind #logon and
@@ -110,7 +111,11 @@ function HeroDemo() {
   const ideaRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (reduced && run === 0) return
+    // Reduced motion never animates; New just closes the finished program.
+    if (reduced) {
+      setPongOpen(false)
+      return
+    }
     setPongOpen(false)
     setT(0)
     const start = performance.now()
@@ -146,11 +151,7 @@ function HeroDemo() {
       ideaRef.current?.focus()
       return
     }
-    try {
-      localStorage.setItem('vibe95-pending-prompt', text)
-    } catch {
-      /* storage blocked: they retype it in the studio */
-    }
+    setPendingPrompt(text)
     location.hash = 'new-user'
   }
 
@@ -468,6 +469,11 @@ function StartMenu({ onClose }: { onClose: () => void }) {
 export function Landing() {
   const [startOpen, setStartOpen] = useState(false)
   const [payError, setPayError] = useState(false)
+
+  // An idea only carries into the logon right after it was typed. Back here
+  // (Cancel, Back, or a later visit), any old one is dropped, so it never
+  // seeds someone else's Vibe Studio on a shared browser.
+  useEffect(() => setPendingPrompt(null), [])
 
   useEffect(() => {
     const dismiss = () => setStartOpen(false)

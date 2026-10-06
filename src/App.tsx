@@ -2,7 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { authClient } from './authClient'
 import { Logon } from './components/Logon'
 import { Landing } from './components/Landing'
-import { exeWindowSize, normalizeExeName, useFs, useWindows, DIALOG_KINDS } from './store'
+import {
+  exeWindowSize,
+  normalizeExeName,
+  pendingPrompt,
+  useFs,
+  useWindows,
+  DIALOG_KINDS,
+} from './store'
 import { extractSize } from './protocol'
 import { Window } from './components/Window'
 import { Taskbar } from './components/Taskbar'
@@ -157,10 +164,7 @@ export default function App() {
       open('welcome', { title: 'Welcome to Vibe95' })
     }
     // An idea typed into the landing page demo: the studio picks it up.
-    if (
-      localStorage.getItem('vibe95-pending-prompt') &&
-      !useWindows.getState().windows.some((w) => w.kind === 'studio')
-    ) {
+    if (pendingPrompt() && !useWindows.getState().windows.some((w) => w.kind === 'studio')) {
       open('studio')
     }
   }, [session?.user?.id])

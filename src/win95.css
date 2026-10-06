@@ -1670,9 +1670,9 @@ textarea.field {
   .landing-logo {
     font-size: 66px;
   }
+  /* 1.5x the bitmap size: whole device pixels on 2x phone screens. */
   .landing-lede {
-    font-size: 11px;
-    line-height: 1.45;
+    font-size: 16.5px;
   }
   .landing-demo {
     padding-right: 0;

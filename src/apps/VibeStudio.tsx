@@ -24,7 +24,14 @@ import {
 import { checkProgramFiles, verifyProgram } from '../verify'
 import { FolderIcon } from '../icons'
 import { iconForName } from '../iconLibrary'
-import { exeWindowSize, normalizeExeName, useFs, useWindows } from '../store'
+import {
+  exeWindowSize,
+  normalizeExeName,
+  pendingPrompt,
+  setPendingPrompt,
+  useFs,
+  useWindows,
+} from '../store'
 
 const MODEL = 'minimax/minimax-m3:free'
 const MAX_REPAIRS = 3
@@ -258,9 +265,7 @@ export function VibeStudio({ winId, editFile }: { winId: string; editFile?: stri
   const saveFile = useFs((s) => s.saveFile)
   const saved = useRef(editFile ? editSession(editFile) : loadSession()).current
   // An idea typed into the landing page demo before logging on.
-  const [prompt, setPrompt] = useState(() =>
-    editFile ? '' : (localStorage.getItem('vibe95-pending-prompt') ?? '')
-  )
+  const [prompt, setPrompt] = useState(() => (editFile ? '' : pendingPrompt()))
   const [log, setLog] = useState<LogEntry[]>(saved?.log ?? [])
   const [history, setHistory] = useState<ChatMessage[]>(saved?.history ?? [])
   const [code, setCode] = useState(saved?.code ?? '')
@@ -327,7 +332,7 @@ export function VibeStudio({ winId, editFile }: { winId: string; editFile?: stri
 
   // The landing page idea is consumed once it is in the prompt box.
   useEffect(() => {
-    if (!editFile) localStorage.removeItem('vibe95-pending-prompt')
+    if (!editFile) setPendingPrompt(null)
   }, [])
 
   // Re-attach to a generation that was running when the page was refreshed.

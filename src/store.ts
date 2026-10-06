@@ -393,3 +393,26 @@ export const useFs = create<FsStore>((set) => ({
   },
   clearLocal: () => set({ files: {}, folders: [], loaded: false }),
 }))
+
+/* ===== Landing page idea ============================================= */
+
+const PENDING_PROMPT_KEY = 'vibe95-pending-prompt'
+
+/** An idea typed into the landing page demo, waiting for the next logon. */
+export function pendingPrompt(): string {
+  try {
+    return localStorage.getItem(PENDING_PROMPT_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+/** Store the idea, or drop it with null. Blocked storage just loses it. */
+export function setPendingPrompt(text: string | null) {
+  try {
+    if (text) localStorage.setItem(PENDING_PROMPT_KEY, text)
+    else localStorage.removeItem(PENDING_PROMPT_KEY)
+  } catch {
+    /* storage blocked: they retype it in the studio */
+  }
+}
